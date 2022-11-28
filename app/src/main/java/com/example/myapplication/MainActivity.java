@@ -65,14 +65,14 @@ public class MainActivity extends AppCompatActivity {
         verifyStoragePermissions(this);
 
         handleListItem();//converts and shows json to ListView
-        getTransactionsRequest();//http-get (fetches opened transaction json)
+        exeTransactionsRequest();//http-get (fetches opened transaction json)
 
 
         //when sharing a file...
         if (Intent.ACTION_SEND.equals(action) && type != null) {
-            if (type.startsWith("image/")) {
-                handleSendImage(intent);
-            }
+            handleSendImage(intent);
+            handleListItem();//converts and shows json to ListView
+            exeTransactionsRequest();//http-get (fetches opened transaction json)
         } else {
             // Handle other intents, such as being started from the home screen
             //System.exit(0);
@@ -90,13 +90,13 @@ public class MainActivity extends AppCompatActivity {
                 if (imgUri!=null) {
                     File file = new File(getRealPathFromURI(imgUri));
                     uploadFile(getProperty("server_api_upload")+clicked.getTransactionId(), file);
-                    adapter.clear();
+                    //adapter.clear();
+                    Toast.makeText(getBaseContext(), "Upload war Erfolgreich.", Toast.LENGTH_LONG).show();
                 }else{
                     Toast.makeText(getBaseContext(), "Es wurde kein Foto zur App geteilt.", Toast.LENGTH_LONG).show();
                 }
             }
         });
-
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
                     .addFormDataPart(
                             "userfile", file.getName(),
-                            RequestBody.create(MediaType.parse("image/*"),
+                            RequestBody.create(MediaType.parse("*/*"),
                             file
                             )
                     )
@@ -141,13 +141,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onResponse(final Call call, final Response response) throws IOException {
-                    if (!response.isSuccessful()) {
+                    if (response.isSuccessful()) {
+                        // Upload successful
+                        imgUri=null;
+                        Log.d("Server","Upload war Erfolgreich.");
+
+                    }else{
                         // Handle the error
-                       Log.d("Server:", "Fehler beim hochladen des Fotos");
+                        Log.d("Server:", "Fehler beim hochladen des Fotos");
                     }
-                    imgUri=null;
-                    Log.d("Server","Upload war Erfolgreich.");
-                    // Upload successful
                 }
             });
 
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
             );
         }
     }
-    private void getTransactionsRequest(){
+    private void exeTransactionsRequest(){
         Request request = new Request.Builder().url(getProperty("server_api_getTransactions")).get().build();
         client.newCall(request).enqueue(new Callback() {
             @Override
