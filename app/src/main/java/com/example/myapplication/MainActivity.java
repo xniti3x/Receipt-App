@@ -48,34 +48,29 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     private final Gson gson = new Gson();
-    private Uri imgUri =null;
     private List<Transaction> ta = new ArrayList<>();
-    private CustomArrayAdapter adapter= null;
     private final OkHttpClient client = new OkHttpClient();
+    private CustomArrayAdapter adapter= null;
+    private Uri imgUri =null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Get intent, action and MIME type
+
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
 
         verifyStoragePermissions(this);
 
-        handleListItem();//converts and shows json to ListView
-        exeTransactionsRequest();//http-get (fetches opened transaction json)
-
-
-        //when sharing a file...
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
+        if (Intent.ACTION_SEND.equals(action) && type != null) {//when sharing a file...
             handleSendImage(intent);
             handleListItem();//converts and shows json to ListView
             exeTransactionsRequest();//http-get (fetches opened transaction json)
         } else {
-            // Handle other intents, such as being started from the home screen
-            //System.exit(0);
+            Intent intentWebView = new Intent(this,MyWebView.class);
+            startActivity(intentWebView);
         }
 
     }
@@ -219,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-    private String getProperty(String key) {
+    public String getProperty(String key) {
         try {
             Properties properties = new Properties();
             AssetManager assetManager = this.getAssets();
